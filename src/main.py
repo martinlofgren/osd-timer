@@ -35,7 +35,7 @@ async def update():
         await asyncio.sleep(1)
 
 
-async def osd(text, size, color, outline, delay):
+def osd(size, color, outline, delay):
     cmd = f"""osd_cat \
         --pos=top \
         --align=right \
@@ -44,22 +44,32 @@ async def osd(text, size, color, outline, delay):
         --delay={delay} \
         --outline={outline} \
         --indent={int(size/70)}
-    """
-    proc = await asyncio.create_subprocess_shell(
+        """
+    proc = asyncio.create_subprocess_shell(
         cmd,
         stdin=asyncio.subprocess.PIPE)
-    await proc.communicate(text.encode('utf-8'))
+
+    return proc
+
+async def clock(queue):
+    logging.info('clock started')
+    c = osd('', 150, 'white', 2, 1)
+    print(c)
+    logging.info('clock process started')
+    await c.communicate('fisk')
+    logging.info('clock stdin written')
 
 
 async def draw():
     logging.info('draw started')
+    q = asyncio.Queue()
+    c = asyncio.create_task(clock(q))
     while True:
         if state['running']:
             secs = state['time']
             time_string = f'{secs // 60 :02}:{secs % 60 :02}'
-            await osd(time_string, 150, 'white', 2, 1)
-        else:
-            await asyncio.sleep(1)
+            print(time_string)
+        await asyncio.sleep(1)
 
 
 async def send_state(user=None):
@@ -77,6 +87,7 @@ async def handle_message(websocket, message):
         if 'action' in data:
             cmd = data['action']
             if cmd == 'start':
+                await set_state('time', data['time'])
                 await set_state('running', True)
             elif cmd == 'stop':
                 await set_state('running', False)

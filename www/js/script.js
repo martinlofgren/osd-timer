@@ -33,6 +33,9 @@ socket.addEventListener('message', event => {
 });
 
 dom_toggle.addEventListener('click', event => {
-    const action = {'action': state['running'] ? 'stop' : 'start'};
+    const action = {
+        'action': state.running ? 'stop' : 'start',
+        'time': parseInt(dom_min.value) * 60 + parseInt(dom_sec.value)
+    };
     socket.send(JSON.stringify(action));
 });
