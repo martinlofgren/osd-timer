@@ -1,8 +1,9 @@
 'use strict'
 
-const url = 'ws://localhost:8765'
+const url = new URL(document.URL)
+const address = `ws://${url.hostname}:8765`
 
-const socket = new WebSocket(url);
+const socket = new WebSocket(address);
 
 const dom_min = document.getElementById('min');
 const dom_sec = document.getElementById('sec');

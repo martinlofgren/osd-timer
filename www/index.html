@@ -7,16 +7,24 @@
   <title>Minecraft clock</title>
   <meta name="description" content="Minecraft Clock">
   <meta name="author" content="Martin Löfgren">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/style.css">
 
 </head>
 
 <body>
-  <div id="time"></div>
-  <input type="number" id="min" value="60"></input>
-  <input type="number" id="sec" value="00"></input>
-  <input type="button" id="toggle" value="Starta klocka"></input>
+  <div id="time">
+    <div>
+      <input type="number" id="min" value="60"/>
+      <input type="number" id="sec" value="00"/>
+    </div>
+
+    <div>
+      <input type="button" id="toggle" value="Starta klocka"/>
+    </div>
+  </div>
+
   <script src="js/script.js"></script>
 </body>
 </html>

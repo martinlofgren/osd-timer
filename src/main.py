@@ -17,7 +17,7 @@ state_changed = asyncio.Event()
 users = set()
 state = {
     'running': False,
-    'time': 5,
+    'time': 60 * 60,
 }
 
 async def set_state(k, v):
@@ -47,10 +47,18 @@ async def osd(size, color, outline, delay):
 
 async def clock(queue):
     logging.info('clock task started')
-    proc = await osd(500, 'white', 2, 2)
+    proc = await osd(200, 'white', 2, 2)
     while True:
         time_string = await queue.get()
         proc.stdin.write(f'{time_string}\n'.encode('utf-8'))
+
+
+async def warn(text, color, repetitions):
+    logging.info(f'warn "{text}" task started')
+    proc = await osd(2500, color, 3, 1)
+    for _ in range(repetitions):
+        proc.stdin.write(f'{text}\n'.encode('utf-8'))
+        await asyncio.sleep(1.5)
 
 
 async def draw():
@@ -63,10 +71,17 @@ async def draw():
         state_changed.clear()
         if state['running']:
             secs = state['time']
-            if secs < 0:
+            if secs == 15 * 60:
+                asyncio.create_task(warn('15 min', 'rgb:22/bb/22', 3))
+            if secs == 10 * 60:
+                asyncio.create_task(warn('10 min', 'rgb:bb/bb/22', 5))
+            if secs == 5 * 60:
+                asyncio.create_task(warn('5 min', 'rgb:bb/22/22', 7))
+            if secs <= 0:
                 secs = -secs
                 sign = '-'
-
+                if secs % 5 == 0:
+                    asyncio.create_task(warn('Tiden ute!', 'rgb:bb/22/22', 2))
             else:
                 sign = ''
             time_string = f'{sign}{secs // 60 :02}:{secs % 60 :02}'
@@ -110,7 +125,7 @@ async def handler(websocket, path):
         logging.info(f'{websocket.remote_address} disconnected')
 
 
-start_server = websockets.serve(handler, "localhost", 8765)
+start_server = websockets.serve(handler, '0.0.0.0', 8765)
 logging.info('server starting')
 
 

@@ -1,0 +1,61 @@
+body {
+    background-color: #222227;
+    color: #cdc;
+    font-family: sans-serif;
+}
+
+#time {
+    /* Position the div in the center of the document */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+
+input {
+    background-color: #222227;
+    border: 1px solid #d0d0d5;
+    color: #d0d0d5;
+    padding: 1em;
+    display: inline-block;
+    margin: 1em;
+    box-sizing: border-box;
+    text-align: center;
+    transition: background-color 0.2s;
+}
+
+input[type="number"] {
+    width: 4em;
+}
+
+input[type="number"]:hover,:focus {
+    background-color: #333338;
+}
+
+input[type="button"] {
+    width: 10.5em;
+}
+
+input[type="button"]:hover {
+    background-color: #d0d0d5;
+    color: #222227;
+}
+
+input:disabled {
+    border: 1px solid #99999f;
+    color: #99999f;
+}
+
+/* Hide spinners */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
