@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# TODOS
+#
+# - Use computers clock instead of decreasing counter based on waiting, to
+#   increase precision
+
 import asyncio
 import websockets
 import json
@@ -7,24 +12,18 @@ import logging
 
 logging.basicConfig(level=20)
 
+state_changed = asyncio.Event()
+
 users = set()
 state = {
     'running': False,
-    'time': 60,
+    'time': 5,
 }
-
-q = asyncio.Queue()
 
 async def set_state(k, v):
     state[k] = v
+    state_changed.set()
     await send_state()
-
-
-async def events_handler():
-    logging.info('events_handler started')
-    while True:
-        event = await q.get()
-        print(f'got event: {event}')
 
 
 async def update():
@@ -35,41 +34,43 @@ async def update():
         await asyncio.sleep(1)
 
 
-def osd(size, color, outline, delay):
-    cmd = f"""osd_cat \
-        --pos=top \
-        --align=right \
-        --font='-*-latin modern sans-*-r-*-*-*-{size}-*-*-*-*-*-*' \
-        --color={color} \
-        --delay={delay} \
-        --outline={outline} \
-        --indent={int(size/70)}
-        """
-    proc = asyncio.create_subprocess_shell(
+async def osd(size, color, outline, delay):
+    cmd = f"osd_cat --pos=top --align=right --font='-*-latin modern sans-*-r-*-*-*-{size}-*-*-*-*-*-*' --color={color} --delay={delay} --outline={outline} --indent={int(size/70)} -l 1 -s 3"
+
+    proc = await asyncio.create_subprocess_shell(
         cmd,
-        stdin=asyncio.subprocess.PIPE)
+        stdin=asyncio.subprocess.PIPE,
+    )
 
     return proc
 
+
 async def clock(queue):
-    logging.info('clock started')
-    c = osd('', 150, 'white', 2, 1)
-    print(c)
-    logging.info('clock process started')
-    await c.communicate('fisk')
-    logging.info('clock stdin written')
+    logging.info('clock task started')
+    proc = await osd(500, 'white', 2, 2)
+    while True:
+        time_string = await queue.get()
+        proc.stdin.write(f'{time_string}\n'.encode('utf-8'))
 
 
 async def draw():
     logging.info('draw started')
     q = asyncio.Queue()
     c = asyncio.create_task(clock(q))
+    logging.info('clock spawned')
     while True:
+        await state_changed.wait()
+        state_changed.clear()
         if state['running']:
             secs = state['time']
-            time_string = f'{secs // 60 :02}:{secs % 60 :02}'
-            print(time_string)
-        await asyncio.sleep(1)
+            if secs < 0:
+                secs = -secs
+                sign = '-'
+
+            else:
+                sign = ''
+            time_string = f'{sign}{secs // 60 :02}:{secs % 60 :02}'
+            await q.put(time_string)
 
 
 async def send_state(user=None):
@@ -82,7 +83,6 @@ async def send_state(user=None):
 async def handle_message(websocket, message):
     logging.info(f'{websocket.remote_address} sent: {message}')
     try:
-        # await q.put('start')
         data = json.loads(message)
         if 'action' in data:
             cmd = data['action']
@@ -117,10 +117,9 @@ logging.info('server starting')
 try:
     asyncio.get_event_loop().run_until_complete(start_server)
 
-    c1 = asyncio.get_event_loop().create_task(update())
-    c2 = asyncio.get_event_loop().create_task(events_handler())
-    c3 = asyncio.get_event_loop().create_task(draw())
-    asyncio.gather(c1, c2, c3)
+    updater = asyncio.get_event_loop().create_task(update())
+    drawer = asyncio.get_event_loop().create_task(draw())
+    asyncio.gather(updater, drawer)
 
     asyncio.get_event_loop().run_forever()
 except KeyboardInterrupt:
