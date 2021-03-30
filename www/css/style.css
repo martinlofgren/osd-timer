@@ -4,48 +4,68 @@ body {
     font-family: sans-serif;
 }
 
-#time {
+.centered {
     /* Position the div in the center of the document */
     position: absolute;
     top: 50%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%);
+    transition: opacity 0.5s ease-out;
+}
+
+#time {
+    opacity: 0;
+}
+
+#offline {
+    opacity: 0;
 }
 
 input {
     background-color: #222227;
-    border: 1px solid #d0d0d5;
     color: #d0d0d5;
-    padding: 1em;
     display: inline-block;
     margin: 1em;
     box-sizing: border-box;
     text-align: center;
     transition: background-color 0.2s;
+    transition: border 0.5s;
 }
 
 input[type="number"] {
+    border: none;
+    border-bottom: 1px solid #909095;
+    color: #909095;
+    padding: 0.5em;
     width: 4em;
 }
 
-input[type="number"]:hover,:focus {
-    background-color: #333338;
+input[type="number"]:hover, input[type="number"]:focus {
+    border-bottom: 1px solid #d0d0d5;
+    color: #d0d0d5;
+}
+
+input[type="number"]:disabled {
+    border-bottom: 1px solid #222227;
+    /* color: #d0d0d5; */
 }
 
 input[type="button"] {
+    padding: 1em;
+    border: 1px solid #d0d0d5;
     width: 10.5em;
 }
 
-input[type="button"]:hover {
+input[type="button"]:hover, input[type="button"]:focus {
     background-color: #d0d0d5;
     color: #222227;
 }
 
-input:disabled {
-    border: 1px solid #99999f;
-    color: #99999f;
-}
+/* input:disabled { */
+/*     border: 1px solid #99999f; */
+/*     color: #99999f; */
+/* } */
 
 /* Hide spinners */
 /* Chrome, Safari, Edge, Opera */
@@ -59,3 +79,6 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+:focus {outline:none;}
+::-moz-focus-inner {border:0;}

@@ -1,0 +1,16 @@
+[Unit]
+Description=Minecraft clock
+Wants=network.target
+After=multi-user.target
+
+[Service]
+Type=simple
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/home/martin/.Xauthority"
+ExecStart=/home/martin/devel/code/minecraft-clock/venv/bin/python3 /home/martin/devel/code/minecraft-clock/src/main.py
+Restart=on-failure
+RestartSec=10
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
