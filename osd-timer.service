@@ -1,0 +1,16 @@
+[Unit]
+Description=osd timer
+Wants=network.target
+After=multi-user.target
+
+[Service]
+Type=simple
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/home/user/.Xauthority"
+ExecStart=/opt/osd-timer/venv/bin/python3 /opt/osd-timer/src/main.py
+Restart=on-failure
+RestartSec=10
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
